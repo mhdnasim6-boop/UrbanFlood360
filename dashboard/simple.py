@@ -27,7 +27,7 @@ from streamlit_folium import st_folium
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from dashboard.results_view import EXAMPLE, RUNS, overlay_png, save_upload  # noqa: E402
+from dashboard.results_view import EXAMPLE, RUNS, overlay_png, radar_png, save_upload  # noqa: E402
 from scripts.analyse_event import AnalysisError, analyse  # noqa: E402
 from scripts.fetch_event_data import MAX_AREA_KM2, area_km2, fetch_buildings  # noqa: E402
 
@@ -150,6 +150,11 @@ folium.TileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Ima
                  attr="Tiles &copy; Esri", name="Satellite", max_zoom=19).add_to(m)
 folium.TileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", name="Light map",
                  attr="&copy; OpenStreetMap contributors &copy; CARTO", max_zoom=19, show=False).add_to(m)
+feats = run_dir / "sar_features_6ch.tif"
+if feats.exists():  # bands: 1 VV before, 3 VV after (dB); dark = smooth surface such as standing water
+    for band, label in [(1, "Radar image before the flood"), (3, "Radar image after the flood")]:
+        rpng, rbounds = radar_png(feats, band, f"radar_vv_band{band}")
+        ImageOverlay(str(rpng), bounds=rbounds, name=label, opacity=0.9, show=False).add_to(m)
 ImageOverlay(str(png), bounds=bounds, name="Flooded area", opacity=0.75).add_to(m)
 if b is not None:
     hit = b[b.impact.isin(["Affected", "Possibly affected"])].copy()
@@ -166,11 +171,12 @@ if b is not None:
                                           aliases=["", "Type", "Flooded around it (%)"]),
         ).add_to(m)
 m.fit_bounds(bounds)
-folium.LayerControl(collapsed=True).add_to(m)
+folium.LayerControl(collapsed=False).add_to(m)
 st.markdown(
     f'<span style="color:rgb{FLOOD_RGB}">■</span> Flooded area &nbsp; '
     f'<span style="color:{RED}">■</span> Affected building &nbsp; '
     f'<span style="color:{ORANGE}">■</span> Possibly affected building', unsafe_allow_html=True)
+st.caption("Tip: the satellite background is from a normal day, not the flood. Switch on **Radar image after the flood** (top right of the map): flood water shows as dark areas, which match the blue.")
 st_folium(m, height=560, use_container_width=True, returned_objects=[], key=f"map_{run_dir.name}")
 
 # affected buildings list

@@ -64,6 +64,29 @@ def overlay_png(mask_tif, rgb, alpha):
     return png, bounds
 
 
+def radar_png(features_tif, band, name, vmin=-25.0, vmax=0.0):
+    """Web-Mercator greyscale PNG of one dB band (dark = low backscatter, e.g. water); returns (png, bounds)."""
+    import rasterio
+    from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds
+    png = features_tif.parent / f"{name}.png"
+    with rasterio.open(features_tif) as src:
+        tr, w, h = calculate_default_transform(src.crs, "EPSG:3857", src.width, src.height, *src.bounds)
+        left, top = tr @ (0, 0)
+        right, bottom = tr @ (w, h)
+        west, south, east, north = transform_bounds("EPSG:3857", "EPSG:4326", left, bottom, right, top)
+        if not png.exists():
+            dst = np.full((h, w), np.nan, dtype="float32")
+            reproject(rasterio.band(src, band), dst, dst_transform=tr, dst_crs="EPSG:3857",
+                      resampling=Resampling.bilinear, src_nodata=src.nodata, dst_nodata=np.nan)
+            ok = np.isfinite(dst)
+            grey = np.clip((dst - vmin) / (vmax - vmin), 0, 1) * 255
+            rgba = np.zeros((h, w, 4), dtype="uint8")
+            rgba[..., :3] = np.where(ok, grey, 0)[..., None].astype("uint8")
+            rgba[..., 3] = np.where(ok, 255, 0)
+            Image.fromarray(rgba, mode="RGBA").save(png, optimize=True)
+    return png, [[south, west], [north, east]]
+
+
 @st.cache_data(show_spinner=False)
 def load_run(run_dir):
     run = Path(run_dir)
