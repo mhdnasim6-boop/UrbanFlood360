@@ -57,14 +57,20 @@ EXAMPLES = {
                                         buildings=DEMO / "buildings.geojson", area=DEMO / "aoi.geojson",
                                         slug="conselice_example"),
 }
-b1, b2, b3 = st.columns([1.2, 1.6, 1.6])
-run = b1.button("Map the flood", type="primary", icon=":material/water:", width="stretch")
+PORTO = ROOT / "demo/porto_alegre_2024"
+EXAMPLES["Porto Alegre, Brazil (May 2024)"] = dict(before=PORTO / "before.tif", after=PORTO / "after.tif",
+                                                   buildings=PORTO / "buildings.geojson", area=PORTO / "aoi.geojson",
+                                                   slug="porto_alegre_example")
+run = st.button("Map the flood", type="primary", icon=":material/water:")
+st.caption("Or try an example:")
 example = None
-if Path(EXAMPLE["post"]).exists() and b2.button("Valencia, Spain (Oct 2024)", icon=":material/science:", width="stretch"):
-    example = "Valencia, Spain (Oct 2024)"
-if (DEMO / "after.tif").exists() and b3.button("Example: Conselice, Italy (May 2023)", icon=":material/public:",
-                                               width="stretch"):
-    example = "Conselice, Italy (May 2023)"
+shown = [(k, icon) for k, icon in [("Porto Alegre, Brazil (May 2024)", ":material/location_city:"),
+                                   ("Conselice, Italy (May 2023)", ":material/agriculture:"),
+                                   ("Valencia, Spain (Oct 2024)", ":material/science:")]
+         if Path(EXAMPLES[k]["after"]).exists()]
+for col, (k, icon) in zip(st.columns(len(shown)), shown):
+    if col.button(k, icon=icon, width="stretch"):
+        example = k
 
 
 def image_area(path):

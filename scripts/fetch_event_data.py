@@ -324,7 +324,7 @@ def fetch(output_dir, flood_date, place=None, bbox=None, aoi_file=None, scenes=N
             b.to_file(out / "buildings.geojson", driver="GeoJSON")
 
     record = dict(
-        area=dict(name=str(aoi["name"].iloc[0]), km2=round(km2, 2), source="place" if place else
+        area=dict(name=str(aoi["name"].iloc[0]) if "name" in aoi else "area", km2=round(km2, 2), source="place" if place else
                   ("file" if aoi_file else ("map" if bbox is None else "bbox")), query=place),
         flood_date=str(pd.Timestamp(flood_date).date()),
         sentinel1=dict(source=f"Microsoft Planetary Computer, {COLLECTION} (GRD, radiometric terrain correction, "
