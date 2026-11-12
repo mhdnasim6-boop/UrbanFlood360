@@ -55,6 +55,7 @@ from rasterio.crs import CRS
 from rasterio.features import geometry_mask, shapes
 from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds
 from rasterio.windows import from_bounds
+from scipy import ndimage
 from shapely.geometry import shape
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -66,6 +67,7 @@ from models.unet_v2.train import get_device  # noqa: E402
 from scripts.assess_building_damage import building_flood_stats, classify  # noqa: E402
 from scripts.predict_flood_map import load_model  # noqa: E402
 from scripts.prepare_buildings import USE_LABELS  # noqa: E402
+import scripts.exposure as ex  # noqa: E402
 
 CHANNELS = ["VV_pre_dB", "VH_pre_dB", "VV_post_dB", "VH_post_dB", "VV_change_dB", "VH_change_dB"]
 CLASSES = ["Affected", "Possibly affected", "Not affected", "No data"]
@@ -153,6 +155,8 @@ def read_vector(path):
     path = Path(path)
     if path.suffix.lower() == ".zip":
         gdf = gpd.read_file(f"zip://{path}")
+    elif path.suffix.lower() == ".parquet":
+        gdf = gpd.read_parquet(path)
     else:
         gdf = gpd.read_file(path)
     if gdf.crs is None:
@@ -341,6 +345,16 @@ def prepare_buildings(path, grid):
     use = b[uc].astype(str).map(lambda v: USE_LABELS.get(v, v)).replace({"yes": "Unknown", "None": "Unknown",
                                                                           "nan": "Unknown"}) if uc else "Unknown"
     out["use"] = use.values if uc else use
+    nc = pick(b, ["name"])
+    out["name"] = b[nc].values if nc else None
+    cc = pick(b, ["class", "building"])           # raw building tag (Overture class / OSM building=*)
+    out["class"] = b[cc].astype(str).replace({"None": None, "nan": None, "yes": None}).values if cc else None
+    for col, names in [("num_floors", ["num_floors", "levels", "building:levels", "numberOfFloorsAboveGround"]),
+                       ("height", ["height"])]:
+        c = pick(b, names)
+        out[col] = pd.to_numeric(b[c], errors="coerce").values if c else np.nan
+    sc = pick(b, ["source"])
+    out["source"] = b[sc].values if sc else None
     fa = pick(b, ["floor_area_m2", "value", "area_m2"])
     out["floor_area_m2"] = pd.to_numeric(b[fa], errors="coerce").values if fa else np.nan
     out["footprint_m2"] = out.geometry.area.round(1)
@@ -361,11 +375,30 @@ def assess_buildings(b, prob, mask, grid, water_mask=None, water_prob=None, ring
     return b
 
 
+def add_depth_and_damage(b, mask, grid, dem_tif, out, permanent_water=None):
+    """water_depth.tif + per-building depth (m), damage fraction (JRC curves) and damage level."""
+    depth = ex.water_depth(mask, grid, dem_tif, permanent_water)
+    if depth is None:
+        return b, None
+    write_tif(out / "water_depth.tif", np.nan_to_num(depth, nan=-1), grid, "float32", -1, "water_depth_m")
+    b = b.copy()
+    b["depth_m"] = np.round(ex.depth_at_buildings(b.geometry, depth, grid["transform"]), 2)
+    b.loc[b.impact.isin(["Not affected", "No data"]), "depth_m"] = np.nan
+    lon, lat = gpd.GeoSeries([b.union_all().centroid], crs=b.crs).to_crs("EPSG:4326").iloc[0].coords[0]
+    where = ex.continent(lon, lat)
+    b["damage_fraction"] = ex.damage_fraction(b.depth_m.values, b.use, where)
+    b["damage_level"] = ex.damage_level(b.depth_m.values, b.impact.values)
+    return b, where
+
+
 # ------------------------------------------------------------------ main entry
 def analyse(pre, post, output_dir, aoi=None, buildings=None, band_order=None, with_water=False,
             threshold=None, ring_m=10.0, affected=0.5, possible=0.1, persons_per_dwelling=2.5,
-            event_name="New event", progress=None):
-    """Run the whole analysis; returns the summary dict. `progress(fraction, text)` is optional."""
+            event_name="New event", progress=None, exposure_dir=None):
+    """Run the whole analysis; returns the summary dict. `progress(fraction, text)` is optional.
+
+    exposure_dir: optional folder from scripts/exposure.py (places.parquet, land_use.parquet, population.tif,
+    dem.tif) used for building type, critical facilities, people and water depth / damage."""
     say = progress or (lambda f, t: print(f"[{f:4.0%}] {t}"))
     t0 = time.time()
     out = Path(output_dir)
@@ -417,25 +450,62 @@ def analyse(pre, post, output_dir, aoi=None, buildings=None, band_order=None, wi
 
     if buildings:
         say(0.7, "Checking every building against the flood map")
+        exp = {k: Path(exposure_dir) / f for k, f in ex.FILES.items()} if exposure_dir else {}
+        have = {k: p for k, p in exp.items() if p.exists()}
         b, cols = prepare_buildings(buildings, grid)
+        b = ex.classify_buildings(b, gpd.read_parquet(have["places"]) if "places" in have else None,
+                                  gpd.read_parquet(have["land_use"]) if "land_use" in have else None)
         b = assess_buildings(b, prob, mask, grid, water_mask, water_prob, ring_m, affected, possible,
                              persons_per_dwelling)
         if aoi_gdf is not None:
             b = b[b.geometry.representative_point().within(aoi_gdf.union_all())]
+        has_dw = cols["dwellings_column"] is not None
+        people_source = f"dwellings x {persons_per_dwelling} people" if has_dw else None
+        if not has_dw and "population" in have:
+            say(0.78, "Estimating the people living in each building")
+            b["residents_est"], _ = ex.residents_from_population(b, have["population"])
+            people_source = "GHS-POP 2025 (100 m) spread over the homes in each cell"
+        region = None
+        if "dem" in have:
+            say(0.84, "Estimating water depth and damage")
+            before_water = np.nan_to_num(ndimage.median_filter(stack[0], size=5), nan=0) < -18   # dark before
+            b, region = add_depth_and_damage(b, mask, grid, have["dem"], out, before_water)
         b.to_crs("EPSG:4326").to_file(out / "buildings_impact.geojson", driver="GeoJSON")
         b.drop(columns="geometry").to_csv(out / "buildings_impact.csv", index=False)
-        aff = b[b.impact == "Affected"]
-        has_dw = cols["dwellings_column"] is not None
+        aff, pos = b[b.impact == "Affected"], b[b.impact == "Possibly affected"]
+        by_use = (b[b.impact != "Not affected"].groupby("use")
+                  .agg(affected=("impact", lambda x: int((x == "Affected").sum())),
+                       possibly=("impact", lambda x: int((x == "Possibly affected").sum())),
+                       people=("residents_est", "sum"))
+                  .sort_values("affected", ascending=False).reset_index())
+        if "damage_level" in b:
+            by_use["severe"] = by_use.use.map(aff[aff.damage_level == "Severe"].use.value_counts()).fillna(0)
         summary["buildings"] = dict(
             total=int(len(b)),
             by_class={c: int((b.impact == c).sum()) for c in CLASSES},
             dwellings_affected=int(aff.dwellings.sum()) if has_dw else None,
-            residents_affected_est=int(round(aff.residents_est.sum())) if has_dw else None,
+            residents_affected_est=int(round(aff.residents_est.sum())) if people_source else None,
+            residents_possibly_affected_est=int(round(pos.residents_est.sum())) if people_source else None,
+            people_source=people_source,
+            critical_total=int(b.critical.sum()),
+            critical_affected=int(aff.critical.sum()),
+            damage_levels={k: int((aff.damage_level == k).sum()) for k in ex.DAMAGE_LEVELS}
+            if "damage_level" in b else None,
+            median_depth_affected_m=round(float(aff.depth_m.median()), 2) if "depth_m" in b and len(aff) else None,
+            depth_p90_affected_m=round(float(aff.depth_m.quantile(0.9)), 2) if "depth_m" in b and len(aff) else None,
+            damage_curves=f"JRC global depth-damage functions, {region}" if region else None,
+            by_use=json.loads(by_use.round(0).to_json(orient="records")),
+            building_sources={str(k): int(v) for k, v in b.source.value_counts().items()} if b.source.notna().any()
+            else None,
             footprint_affected_m2=int(aff.footprint_m2.sum()),
             columns_used=cols,
         )
-        if not has_dw:
-            notes.append("The building data has no usable dwelling counts (missing, or filled in for fewer than half the buildings, as is usual in OpenStreetMap), so dwellings and residents are not estimated.")
+        if not people_source:
+            notes.append("No population data or dwelling counts, so the people affected are not estimated.")
+        if region:
+            notes.append("Water depth is estimated from the flood edge and the Copernicus 30 m terrain model; in "
+                         "dense cities it is rough (the terrain model includes some building heights). Damage "
+                         "levels: Minor < 0.5 m, Moderate 0.5-1.5 m, Severe >= 1.5 m.")
 
     summary["runtime_s"] = round(time.time() - t0, 1)
     json.dump(summary, open(out / "summary.json", "w"), indent=2, default=str)

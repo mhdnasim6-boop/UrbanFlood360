@@ -64,6 +64,53 @@ def overlay_png(mask_tif, rgb, alpha):
     return png, bounds
 
 
+def buildings_png(b, colors, png, max_px=6000, pixel_m=3.0):
+    """Web-Mercator RGBA PNG with every building filled in its colour (colors: hex per row); returns bounds.
+
+    Used when there are too many buildings for interactive shapes on the map (tens of thousands)."""
+    from rasterio.features import rasterize
+    from rasterio.transform import from_origin
+    from rasterio.warp import transform_bounds
+    g = b.to_crs("EPSG:3857")
+    x0, y0, x1, y1 = g.total_bounds
+    px = max(pixel_m, (x1 - x0) / max_px, (y1 - y0) / max_px)
+    w, h = int(np.ceil((x1 - x0) / px)) + 1, int(np.ceil((y1 - y0) / px)) + 1
+    T = from_origin(x0, y1, px, px)
+    palette = list(dict.fromkeys(colors))
+    code = pd.Series(colors, index=g.index).map({c: i + 1 for i, c in enumerate(palette)})
+    lab = rasterize(zip(g.geometry, code), out_shape=(h, w), transform=T, fill=0, all_touched=True, dtype="uint8")
+    rgba = np.zeros((h, w, 4), "uint8")
+    for i, c in enumerate(palette, start=1):
+        rgba[lab == i] = (int(c[1:3], 16), int(c[3:5], 16), int(c[5:7], 16), 235)
+    Image.fromarray(rgba, mode="RGBA").save(png, optimize=True)
+    west, south, east, north = transform_bounds("EPSG:3857", "EPSG:4326", x0, y1 - h * px, x0 + w * px, y1)
+    return [[south, west], [north, east]]
+
+
+def depth_png(depth_tif, png, vmax=3.0):
+    """Web-Mercator RGBA PNG of water depth (m): light blue (shallow) to dark blue (>= vmax); returns bounds."""
+    import rasterio
+    from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds
+    with rasterio.open(depth_tif) as src:
+        tr, w, h = calculate_default_transform(src.crs, "EPSG:3857", src.width, src.height, *src.bounds)
+        dst = np.full((h, w), np.nan, dtype="float32")
+        reproject(rasterio.band(src, 1), dst, dst_transform=tr, dst_crs="EPSG:3857", src_nodata=src.nodata,
+                  dst_nodata=np.nan, resampling=Resampling.nearest)
+    left, top = tr @ (0, 0)
+    right, bottom = tr @ (w, h)
+    west, south, east, north = transform_bounds("EPSG:3857", "EPSG:4326", left, bottom, right, top)
+    if not png.exists():
+        ok = np.isfinite(dst) & (dst >= 0)
+        t = np.clip(np.nan_to_num(dst) / vmax, 0, 1)[..., None]
+        light, dark = np.array([186, 228, 250]), np.array([8, 48, 107])
+        rgb = (light * (1 - t) + dark * t).astype("uint8")
+        rgba = np.zeros((h, w, 4), "uint8")
+        rgba[..., :3] = rgb
+        rgba[..., 3] = np.where(ok, 200, 0)
+        Image.fromarray(rgba, mode="RGBA").save(png, optimize=True)
+    return png, [[south, west], [north, east]]
+
+
 def radar_png(features_tif, band, name, vmin=-25.0, vmax=0.0):
     """Web-Mercator greyscale PNG of one dB band (dark = low backscatter, e.g. water); returns (png, bounds)."""
     import rasterio
