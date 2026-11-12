@@ -1,0 +1,8 @@
+{
+  "name": "U-Net trained on UrbanSARFloods (18 flood events)",
+  "checkpoint": "models/urbansarfloods/best_model.pt",
+  "threshold": 0.5,
+  "trained": "Kaggle T4, 100 epochs, paper settings (CVPRW 2024); best epoch 95, val F1 flooded-any 0.80, flooded-open 0.82, flooded-urban 0.25",
+  "valencia_test_dice": {"snap": 0.219, "pc": 0.0},
+  "note": "Maps standing water at image time. On Valencia the reference also counts drained flood traces, which this model does not map."
+}

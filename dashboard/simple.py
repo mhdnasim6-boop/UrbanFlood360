@@ -49,9 +49,22 @@ with st.expander("Optional: your own building footprints or area boundary"):
     up_buildings = o1.file_uploader("Building footprints", type=["geojson", "json", "gpkg", "zip", "gml"])
     up_area = o2.file_uploader("Area boundary", type=["geojson", "json", "gpkg", "zip"])
 
-b1, b2 = st.columns([1, 4])
+DEMO = ROOT / "demo/conselice_2023"
+EXAMPLES = {
+    "Valencia, Spain (Oct 2024)": dict(before=EXAMPLE["pre"], after=EXAMPLE["post"], buildings=EXAMPLE["buildings"],
+                                       area=EXAMPLE["aoi"], slug="valencia_example"),
+    "Conselice, Italy (May 2023)": dict(before=DEMO / "before.tif", after=DEMO / "after.tif",
+                                        buildings=DEMO / "buildings.geojson", area=DEMO / "aoi.geojson",
+                                        slug="conselice_example"),
+}
+b1, b2, b3 = st.columns([1.2, 1.6, 1.6])
 run = b1.button("Map the flood", type="primary", icon=":material/water:", width="stretch")
-example = b2.button("Try the Valencia 2024 example", icon=":material/science:")
+example = None
+if Path(EXAMPLE["post"]).exists() and b2.button("Valencia, Spain (Oct 2024)", icon=":material/science:", width="stretch"):
+    example = "Valencia, Spain (Oct 2024)"
+if (DEMO / "after.tif").exists() and b3.button("Example: Conselice, Italy (May 2023)", icon=":material/public:",
+                                               width="stretch"):
+    example = "Conselice, Italy (May 2023)"
 
 
 def image_area(path):
@@ -62,14 +75,16 @@ def image_area(path):
 
 if run or example:
     if example:
-        before, after, buildings, area = EXAMPLE["pre"], EXAMPLE["post"], EXAMPLE["buildings"], EXAMPLE["aoi"]
-        name = "Valencia example"
+        ex = EXAMPLES[example]
+        before, after, area = ex["before"], ex["after"], ex["area"]
+        buildings = ex["buildings"] if Path(ex["buildings"]).exists() else None
+        name = example
     elif not (up_before and up_after):
         st.error("Please upload both images: one from before and one from after the flood.")
         st.stop()
     else:
         name = Path(up_after.name).stem[:40]
-    run_dir = RUNS / f"{time.strftime('%Y%m%d_%H%M%S')}_{'valencia_example' if example else 'upload'}"
+    run_dir = RUNS / f"{time.strftime('%Y%m%d_%H%M%S')}_{EXAMPLES[example]['slug'] if example else 'upload'}"
     inputs = run_dir / "inputs"
     bar = st.progress(0.0, "Starting")
     try:
@@ -77,19 +92,19 @@ if run or example:
             before, after = save_upload(up_before, inputs), save_upload(up_after, inputs)
             area = save_upload(up_area, inputs) if up_area else None
             buildings = save_upload(up_buildings, inputs) if up_buildings else None
-            if buildings is None:
-                zone = gpd.read_file(area).to_crs("EPSG:4326") if area else image_area(before)
-                km2 = area_km2(zone)
-                if km2 > MAX_AREA_KM2:
-                    raise AnalysisError(
-                        f"The images cover {km2:,.0f} km², too large to download all its buildings "
-                        f"(limit {MAX_AREA_KM2} km²). Crop the images to the town, or add an area boundary.")
-                bar.progress(0.05, "Downloading buildings from OpenStreetMap")
-                b = fetch_buildings(zone)
-                if len(b):
-                    inputs.mkdir(parents=True, exist_ok=True)
-                    buildings = inputs / "osm_buildings.geojson"
-                    b.to_file(buildings, driver="GeoJSON")
+        if buildings is None:
+            zone = gpd.read_file(area).to_crs("EPSG:4326") if area else image_area(before)
+            km2 = area_km2(zone)
+            if km2 > MAX_AREA_KM2:
+                raise AnalysisError(
+                    f"The images cover {km2:,.0f} km², too large to download all its buildings "
+                    f"(limit {MAX_AREA_KM2} km²). Crop the images to the town, or add an area boundary.")
+            bar.progress(0.05, "Downloading buildings from OpenStreetMap")
+            b = fetch_buildings(zone)
+            if len(b):
+                inputs.mkdir(parents=True, exist_ok=True)
+                buildings = inputs / "osm_buildings.geojson"
+                b.to_file(buildings, driver="GeoJSON")
         analyse(before, after, run_dir, aoi=area, buildings=buildings, event_name=name,
                 progress=lambda f, t: bar.progress(0.15 + 0.85 * f, t))
         ss["run_dir"] = str(run_dir)
@@ -188,5 +203,10 @@ if b is not None:
 d3.download_button("Everything (ZIP)", (run_dir / "results.zip").read_bytes(), f"{run_dir.name}.zip",
                    "application/zip", icon=":material/download:", width="stretch")
 
-st.caption("The flood model was trained on the Valencia 2024 flood. On other places, or images from another "
-           "satellite track, it can show too much flooding. Check the map against local reports.")
+model_name = summary["model"].get("name", "U-Net v2 trained on Valencia 2024")
+if "UrbanSARFloods" in model_name:
+    st.caption(f"Flood map made by the {model_name}. It was not trained on this place, so check the map against "
+               "local reports before acting on it.")
+else:
+    st.caption(f"Flood map made by the {model_name}. On other places, or images from another satellite track, it "
+               "can show too much flooding. Check the map against local reports.")

@@ -39,6 +39,7 @@ Usage:
 """
 import argparse
 import json
+import os
 import sys
 import time
 import warnings
@@ -49,6 +50,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
+import torch
 from rasterio.crs import CRS
 from rasterio.features import geometry_mask, shapes
 from rasterio.warp import Resampling, calculate_default_transform, reproject, transform_bounds
@@ -218,20 +220,85 @@ def input_check(stack, valid, norm):
 
 
 # ------------------------------------------------------------------ model
+ACTIVE_MODEL = ROOT / "models/active_flood_model.json"   # which checkpoint maps flood-affected ground
+
+
 def selected(target):
+    """(checkpoint path, threshold) for a target. For "affected", models/active_flood_model.json wins if present."""
+    if target == "affected" and ACTIVE_MODEL.exists():
+        a = json.load(open(ACTIVE_MODEL))
+        if (ROOT / a["checkpoint"]).exists():
+            return ROOT / a["checkpoint"], float(a["threshold"])
     sel = json.load(open(ROOT / f"models/unet_v2/selected_model_{target}.json"))
     return ROOT / sel["checkpoint"], float(sel["threshold"])
 
 
-def run_model(stack, valid, target, device, threshold=None):
+def active_model_name():
+    if ACTIVE_MODEL.exists():
+        a = json.load(open(ACTIVE_MODEL))
+        if (ROOT / a["checkpoint"]).exists():
+            return a.get("name", a["checkpoint"])
+    return "U-Net v2 trained on Valencia 2024"
+
+
+class FloodLogit(torch.nn.Module):
+    """3-class (not flooded / flooded open / flooded urban) U-Net -> one logit of P(flooded open or urban)."""
+
+    def __init__(self, net):
+        super().__init__()
+        self.net = net
+
+    def forward(self, x):
+        p = torch.softmax(self.net(x).float(), dim=1)
+        flood = (p[:, 1:2] + p[:, 2:3]).clamp(1e-6, 1 - 1e-6)
+        return torch.log(flood) - torch.log1p(-flood)
+
+
+def load_flood_model(ckpt_path, device):
+    """Model returning a flood logit per pixel, its checkpoint, and how to run it (pixel size, tiles)."""
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    if ckpt.get("architecture") == "smp.Unet":                      # UrbanSARFloods model (Kaggle)
+        import segmentation_models_pytorch as smp
+        c = ckpt["config"]
+        net = smp.Unet(c["encoder"], encoder_weights=None, in_channels=len(c["channels"]), classes=len(c["classes"]))
+        net.load_state_dict(ckpt["state_dict"])
+        return FloodLogit(net).to(device).eval(), ckpt, dict(pixel_m=float(c.get("resolution_m", 20)), tile=256,
+                                                              overlap=64, batch_size=8)
+    model, ckpt = load_model(ckpt_path, device)                     # U-Net v2 (Valencia)
+    inf = ckpt["config"]["inference"]
+    return model, ckpt, dict(pixel_m=TRAINING_RES_M, tile=inf["tile"], overlap=inf["overlap"],
+                             batch_size=inf["batch_size"])
+
+
+def coarsen(stack, f):
+    """(6,H,W) dB stack -> (6,ceil(H/f),ceil(W/f)) by averaging f x f blocks in linear power (change recomputed)."""
+    C, H, W = stack.shape
+    Hp, Wp = -(-H // f) * f, -(-W // f) * f
+    pad = np.full((4, Hp, Wp), np.nan, dtype="float32")
+    pad[:, :H, :W] = 10 ** (stack[:4] / 10)
+    blocks = pad.reshape(4, Hp // f, f, Wp // f, f)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        db = 10 * np.log10(np.nanmean(blocks, axis=(2, 4)))
+    return np.concatenate([db, db[2:4] - db[0:2]]).astype("float32")
+
+
+def run_model(stack, valid, target, device, threshold=None, pixel_m=TRAINING_RES_M):
     ckpt_path, default_thr = selected(target)
     thr = default_thr if threshold is None else threshold
-    model, ckpt = load_model(ckpt_path, device)
-    inf = ckpt["config"]["inference"]
-    prob = predict_raster(model, normalize(stack, ckpt["normalization"]), device,
-                          inf["tile"], inf["overlap"], inf["batch_size"], valid=valid)
+    model, ckpt, run = load_flood_model(ckpt_path, device)
+    f = max(int(round(run["pixel_m"] / pixel_m)), 1)
+    if f > 1:                                     # model trained on coarser pixels (UrbanSARFloods: 20 m)
+        small = coarsen(stack, f)
+        small_valid = np.all(np.isfinite(small), axis=0)
+        p = predict_raster(model, normalize(small, ckpt["normalization"]), device, run["tile"], run["overlap"],
+                           run["batch_size"], valid=small_valid)
+        prob = np.repeat(np.repeat(p, f, axis=0), f, axis=1)[:stack.shape[1], :stack.shape[2]]
+        prob = np.where(valid, prob, np.nan).astype("float32")
+    else:
+        prob = predict_raster(model, normalize(stack, ckpt["normalization"]), device,
+                              run["tile"], run["overlap"], run["batch_size"], valid=valid)
     mask = np.full(prob.shape, 255, dtype="uint8")
-    mask[valid] = (prob[valid] >= thr).astype("uint8")
+    mask[valid] = (np.nan_to_num(prob[valid], nan=0.0) >= thr).astype("uint8")
     return prob, mask, thr, ckpt
 
 
@@ -306,20 +373,21 @@ def analyse(pre, post, output_dir, aoi=None, buildings=None, band_order=None, wi
 
     say(0.05, "Reading the radar images")
     stack, grid, valid, aoi_gdf, notes = build_stack(pre, post, aoi, band_order)
-    _, ckpt = load_model(selected("affected")[0], "cpu")
+    ckpt = torch.load(selected("affected")[0], map_location="cpu", weights_only=False)
     notes += input_check(stack, valid, ckpt["normalization"])
     write_tif(out / "sar_features_6ch.tif", stack, grid, "float32", np.nan, CHANNELS)
 
     device = get_device()
     say(0.25, "Mapping flood-affected ground with the U-Net")
-    prob, mask, thr, _ = run_model(stack, valid, "affected", device, threshold)
+    prob, mask, thr, _ = run_model(stack, valid, "affected", device, threshold, abs(grid["transform"].a))
     write_tif(out / "flood_probability.tif", prob, grid, "float32", np.nan, "flood_probability")
     write_tif(out / "flood_mask.tif", mask, grid, "uint8", 255, f"flood_affected_threshold_{thr}")
 
     water_prob = water_mask = None
     if with_water:
         say(0.45, "Mapping standing water with the U-Net")
-        water_prob, water_mask, water_thr, _ = run_model(stack, valid, "water", device)
+        water_prob, water_mask, water_thr, _ = run_model(stack, valid, "water", device,
+                                                          pixel_m=abs(grid["transform"].a))
         write_tif(out / "water_mask.tif", water_mask, grid, "uint8", 255, f"standing_water_threshold_{water_thr}")
 
     say(0.6, "Turning the flood map into polygons")
@@ -335,7 +403,8 @@ def analyse(pre, post, output_dir, aoi=None, buildings=None, band_order=None, wi
                     buildings=Path(buildings).name if buildings else None),
         grid=dict(crs=grid["crs"].to_string(), width=grid["width"], height=grid["height"],
                   pixel_m=abs(grid["transform"].a)),
-        model=dict(checkpoint=str(selected("affected")[0].relative_to(ROOT)), threshold=thr, device=str(device)),
+        model=dict(name=active_model_name(), checkpoint=os.path.relpath(selected("affected")[0], ROOT),
+                   threshold=thr, device=str(device)),
         area_with_data_km2=round(float(valid.sum() * px_km2), 2),
         flood_affected_km2=round(float((mask == 1).sum() * px_km2), 2),
         flood_affected_pct=round(100 * float((mask == 1).sum() / max(valid.sum(), 1)), 1),

@@ -6,6 +6,7 @@ archive/
 external/
 outputs/user_runs/
 outputs/maps/
+outputs/model_check/
 kaggle_kernel*/output/
 kaggle_kernel*/poll.log
 final_output*/
@@ -14,6 +15,7 @@ final_output*/
 *.pt
 !models/unet_v2/runs/affected_aug/best_model.pt
 !models/unet_v2/runs/water_no_aug/best_model.pt
+!models/urbansarfloods/best_model.pt
 
 # python / os / editor
 __pycache__/

@@ -1,0 +1,116 @@
+{
+  "best_epoch": 95,
+  "val": {
+    "NF": {
+      "precision": 0.9992398567597248,
+      "recall": 0.9917282599815439,
+      "f1": 0.9954698883581455
+    },
+    "FO": {
+      "precision": 0.7068043943102607,
+      "recall": 0.9686742698658777,
+      "f1": 0.8172747827059276
+    },
+    "FU": {
+      "precision": 0.16813284551329855,
+      "recall": 0.49796394924827164,
+      "f1": 0.2513871749829416
+    },
+    "flood_any": {
+      "precision": 0.6830878882644322,
+      "recall": 0.9594038174458315,
+      "f1": 0.7980035763632808
+    },
+    "mean_flood_f1": 0.5343309788444346
+  },
+  "val_confusion": [
+    [
+      434089218,
+      3197152,
+      423470
+    ],
+    [
+      244471,
+      7711055,
+      4895
+    ],
+    [
+      85750,
+      1537,
+      86579
+    ]
+  ],
+  "config": {
+    "paper": "UrbanSARFloods, CVPRW 2024, Sec. 4.1",
+    "encoder": "resnet34",
+    "encoder_weights": "imagenet",
+    "lr": 1e-05,
+    "weight_decay": 0.0001,
+    "batch_size": 12,
+    "epochs": 100,
+    "crop": 256,
+    "loss": "weighted cross-entropy",
+    "class_weights": [
+      1.0,
+      7.656562805175781,
+      53.30265808105469
+    ],
+    "class_pixel_share": [
+      0.9828877947890601,
+      0.01676626088237598,
+      0.0003459443285639332
+    ],
+    "channels": [
+      "VV_pre_dB",
+      "VH_pre_dB",
+      "VV_post_dB",
+      "VH_post_dB",
+      "VV_change_dB",
+      "VH_change_dB"
+    ],
+    "classes": [
+      "NF",
+      "FO",
+      "FU"
+    ],
+    "resolution_m": 20,
+    "band_check": {
+      "method": "value ranges (dB < 0, coherence in 0..1)",
+      "order_0based": [
+        5,
+        4,
+        7,
+        6
+      ],
+      "descriptions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "medians": [
+        0.13805684447288513,
+        0.20011022686958313,
+        0.11931218951940536,
+        0.13697591423988342,
+        -12.781030654907227,
+        -7.121908187866211,
+        -12.721181869506836,
+        -7.027231693267822
+      ],
+      "mapping": {
+        "VV_pre_dB": "band 6",
+        "VH_pre_dB": "band 5",
+        "VV_post_dB": "band 8",
+        "VH_post_dB": "band 7"
+      }
+    },
+    "n_train": 4501,
+    "n_val": 1970,
+    "seed": 42
+  }
+}

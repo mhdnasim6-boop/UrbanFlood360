@@ -1,0 +1,35 @@
+{
+  "method": "value ranges (dB < 0, coherence in 0..1)",
+  "order_0based": [
+    5,
+    4,
+    7,
+    6
+  ],
+  "descriptions": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "medians": [
+    0.13805684447288513,
+    0.20011022686958313,
+    0.11931218951940536,
+    0.13697591423988342,
+    -12.781030654907227,
+    -7.121908187866211,
+    -12.721181869506836,
+    -7.027231693267822
+  ],
+  "mapping": {
+    "VV_pre_dB": "band 6",
+    "VH_pre_dB": "band 5",
+    "VV_post_dB": "band 8",
+    "VH_post_dB": "band 7"
+  }
+}
