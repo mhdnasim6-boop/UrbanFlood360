@@ -1,0 +1,13 @@
+method,trained_on,region,threshold,note,tp,tn,fp,fn,dice,iou,precision,recall,specificity,accuracy
+Otsu: low post-event VV,-,val_block,0.5,VV_post <= -13.52 dB,1914,23588,304,26150,0.1264,0.0675,0.8629,0.0682,0.9873,0.4908
+Otsu: low post-event VV,-,test_block,0.5,VV_post <= -13.52 dB,23,21847,606,7226,0.0058,0.0029,0.0366,0.0032,0.973,0.7363
+Otsu: VV decrease,-,val_block,0.5,VV_change <= -4.42 dB,1670,23739,153,26394,0.1118,0.0592,0.9161,0.0595,0.9936,0.489
+Otsu: VV decrease,-,test_block,0.5,VV_change <= -4.42 dB,49,22367,86,7200,0.0133,0.0067,0.363,0.0068,0.9962,0.7547
+U-Net v2 (affected_aug),affected,val_block,0.35,"epoch 21, augment=True",26222,10749,13143,1842,0.7778,0.6363,0.6661,0.9344,0.4499,0.7116
+U-Net v2 (affected_aug),affected,test_block,0.35,"epoch 21, augment=True",5624,19478,2975,1625,0.7097,0.5501,0.654,0.7758,0.8675,0.8451
+U-Net v2 (affected_no_aug),affected,val_block,0.3,"epoch 21, augment=False",21065,14573,9319,6999,0.7208,0.5635,0.6933,0.7506,0.61,0.6859
+U-Net v2 (affected_no_aug),affected,test_block,0.3,"epoch 21, augment=False",2488,19673,2780,4761,0.3975,0.2481,0.4723,0.3432,0.8762,0.7461
+U-Net v2 (water_aug),water,val_block,0.4,"epoch 31, augment=True",3883,22883,1009,24181,0.2356,0.1336,0.7937,0.1384,0.9578,0.5152
+U-Net v2 (water_aug),water,test_block,0.4,"epoch 31, augment=True",3,22448,5,7246,0.0008,0.0004,0.375,0.0004,0.9998,0.7559
+U-Net v2 (water_no_aug),water,val_block,0.7,"epoch 22, augment=False",3257,23275,617,24807,0.204,0.1136,0.8407,0.1161,0.9742,0.5107
+U-Net v2 (water_no_aug),water,test_block,0.7,"epoch 22, augment=False",0,22453,0,7249,0.0,0.0,0.0,0.0,1.0,0.7559

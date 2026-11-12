@@ -1,0 +1,29 @@
+# --- large / third-party / local data (not in git) ---
+data/raw/
+data/interim/
+data/processed/
+archive/
+external/
+outputs/user_runs/
+outputs/maps/
+kaggle_kernel*/output/
+kaggle_kernel*/poll.log
+final_output*/
+
+# model checkpoints: keep only the two selected U-Net v2 models the dashboard uses
+*.pt
+!models/unet_v2/runs/affected_aug/best_model.pt
+!models/unet_v2/runs/water_no_aug/best_model.pt
+
+# python / os / editor
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+*.aux.xml
+.venv/
+venv/
+
+# secrets
+kaggle.json
+.env

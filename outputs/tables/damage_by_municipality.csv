@@ -1,0 +1,7 @@
+municipality,buildings,affected,possibly_affected,not_affected,no_data,dwellings_affected,dwellings_possibly,residents_affected_est,floor_area_affected_m2,pct_affected,pct_affected_or_possibly
+Alfafar,1873,406,59,1408,0,1631,840,4077.5,968251,21.7,24.8
+Catarroja,3831,826,262,2743,0,2632,1213,6580.0,964662,21.6,28.4
+Massanassa,1981,375,104,1502,0,640,579,1600.0,523258,18.9,24.2
+Paiporta,2294,663,63,1568,0,2666,582,6665.0,932380,28.9,31.6
+Picanya,1497,173,100,1224,0,252,408,630.0,148447,11.6,18.2
+Sedavi,1291,290,38,963,0,538,604,1345.0,330799,22.5,25.4

@@ -1,0 +1,36 @@
+data:
+  sar_stack: data/processed/sar_features/sar_features_6ch.tif
+  label: data/processed/unet_dataset/labels/flood_reference.tif
+  block_grid:
+  - 4
+  - 4
+  val_block:
+  - 1
+  - 2
+  test_block:
+  - 2
+  - 1
+  buffer_m: 150
+  window: 64
+  min_labeled: 0.1
+model:
+  base_channels: 32
+  dropout: 0.3
+train:
+  epochs: 80
+  min_epochs: 20
+  patience: 20
+  windows_per_epoch: 1024
+  batch_size: 16
+  lr: 0.001
+  weight_decay: 0.0001
+  bce_weight: 0.5
+  pos_weight: auto
+  augment: false
+  ema_decay: 0.995
+  seed: 42
+  pos_weight_resolved: 6.6568
+inference:
+  tile: 128
+  overlap: 32
+  batch_size: 16

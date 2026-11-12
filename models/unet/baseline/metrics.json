@@ -1,0 +1,23 @@
+{
+  "best_epoch": 8,
+  "epochs_run": 18,
+  "early_stopped": true,
+  "total_runtime_s": 158.2,
+  "mean_epoch_time_s": 8.79,
+  "best_val_loss": 0.12364850752055645,
+  "best_val_dice": 0.6751740139080593,
+  "best_val_iou": 0.5096322241532507,
+  "best_val_precision": 0.8804841149329055,
+  "best_val_recall": 0.547507055486124,
+  "best_val_specificity": 0.9951338699059725,
+  "best_val_tp": 1746,
+  "best_val_tn": 48467,
+  "best_val_fp": 237,
+  "best_val_fn": 1443,
+  "device": "mps",
+  "batch_size": 8,
+  "threshold": 0.5,
+  "n_train_patches": 301,
+  "n_val_patches": 14,
+  "test_set_accessed": false
+}

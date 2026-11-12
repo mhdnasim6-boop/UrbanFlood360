@@ -1,0 +1,25 @@
+{
+  "run": "affected_aug",
+  "best_epoch": 21,
+  "epochs_run": 41,
+  "threshold": 0.35,
+  "val": {
+    "threshold": 0.35,
+    "tp": 26222,
+    "tn": 10749,
+    "fp": 13143,
+    "fn": 1842,
+    "dice": 0.7777662430111557,
+    "iou": 0.6363481932681186,
+    "precision": 0.6661247300901648,
+    "recall": 0.9343643101481993,
+    "specificity": 0.4498995479658275,
+    "accuracy": 0.7115828778196799
+  },
+  "total_minutes": 5.65,
+  "device": "mps",
+  "parameters": 7763905,
+  "pos_weight": 2.0592872392839547,
+  "augment": true,
+  "test_block_accessed": false
+}

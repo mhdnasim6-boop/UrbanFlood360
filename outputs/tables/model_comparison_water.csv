@@ -1,0 +1,33 @@
+method,trained_on,region,threshold,note,tp,tn,fp,fn,dice,iou,precision,recall,specificity,accuracy
+Otsu: low post-event VV,-,val_block,0.5,VV_post <= -13.52 dB,1646,23588,304,2176,0.5703,0.3989,0.8441,0.4307,0.9873,0.9105
+Otsu: low post-event VV,-,test_block,0.5,VV_post <= -13.52 dB,2,21847,606,111,0.0055,0.0028,0.0033,0.0177,0.973,0.9682
+Otsu: low post-event VV,-,val_patches,0.5,VV_post <= -13.52 dB,463,12794,217,870,0.46,0.2987,0.6809,0.3473,0.9833,0.9242
+Otsu: low post-event VV,-,test_patches,0.5,VV_post <= -13.52 dB,2,13064,299,48,0.0114,0.0057,0.0066,0.04,0.9776,0.9741
+Otsu: VV decrease,-,val_block,0.5,VV_change <= -4.42 dB,1495,23739,153,2327,0.5466,0.3761,0.9072,0.3912,0.9936,0.9105
+Otsu: VV decrease,-,test_block,0.5,VV_change <= -4.42 dB,2,22367,86,111,0.0199,0.0101,0.0227,0.0177,0.9962,0.9913
+Otsu: VV decrease,-,val_patches,0.5,VV_change <= -4.42 dB,424,12904,107,909,0.4549,0.2944,0.7985,0.3181,0.9918,0.9292
+Otsu: VV decrease,-,test_patches,0.5,VV_change <= -4.42 dB,0,13330,33,50,0.0,0.0,0.0,0.0,0.9975,0.9938
+Repository U-Net (BCE baseline),water,val_block,0.5,301 fixed patches,2813,23025,867,1009,0.7499,0.5999,0.7644,0.736,0.9637,0.9323
+Repository U-Net (BCE baseline),water,test_block,0.5,301 fixed patches,0,22453,0,113,0.0,0.0,0.0,0.0,1.0,0.995
+Repository U-Net (BCE baseline),water,val_patches,0.5,301 fixed patches,1004,12808,203,329,0.7906,0.6536,0.8318,0.7532,0.9844,0.9629
+Repository U-Net (BCE baseline),water,test_patches,0.5,301 fixed patches,0,13363,0,50,0.0,0.0,0.0,0.0,1.0,0.9963
+Repository U-Net (weighted BCE+Dice),water,val_block,0.4,301 fixed patches,3079,22750,1142,743,0.7656,0.6203,0.7294,0.8056,0.9522,0.932
+Repository U-Net (weighted BCE+Dice),water,test_block,0.4,301 fixed patches,0,22450,3,113,0.0,0.0,0.0,0.0,0.9999,0.9949
+Repository U-Net (weighted BCE+Dice),water,val_patches,0.4,301 fixed patches,1157,12636,375,176,0.8077,0.6774,0.7552,0.868,0.9712,0.9616
+Repository U-Net (weighted BCE+Dice),water,test_patches,0.4,301 fixed patches,0,13363,0,50,0.0,0.0,0.0,0.0,1.0,0.9963
+U-Net v2 (affected_aug),affected,val_block,0.35,"epoch 21, augment=True",3792,10749,13143,30,0.3654,0.2235,0.2239,0.9922,0.4499,0.5247
+U-Net v2 (affected_aug),affected,test_block,0.35,"epoch 21, augment=True",48,19478,2975,65,0.0306,0.0155,0.0159,0.4248,0.8675,0.8653
+U-Net v2 (affected_aug),affected,val_patches,0.35,"epoch 21, augment=True",1321,7674,5337,12,0.3306,0.1981,0.1984,0.991,0.5898,0.6271
+U-Net v2 (affected_aug),affected,test_patches,0.35,"epoch 21, augment=True",1,12203,1160,49,0.0017,0.0008,0.0009,0.02,0.9132,0.9099
+U-Net v2 (affected_no_aug),affected,val_block,0.3,"epoch 21, augment=False",3409,14573,9319,413,0.412,0.2594,0.2678,0.8919,0.61,0.6488
+U-Net v2 (affected_no_aug),affected,test_block,0.3,"epoch 21, augment=False",57,19673,2780,56,0.0386,0.0197,0.0201,0.5044,0.8762,0.8743
+U-Net v2 (affected_no_aug),affected,val_patches,0.3,"epoch 21, augment=False",1066,9154,3857,267,0.3408,0.2054,0.2165,0.7997,0.7036,0.7125
+U-Net v2 (affected_no_aug),affected,test_patches,0.3,"epoch 21, augment=False",17,12351,1012,33,0.0315,0.016,0.0165,0.34,0.9243,0.9221
+U-Net v2 (water_aug),water,val_block,0.4,"epoch 31, augment=True",2929,22883,1009,893,0.7549,0.6063,0.7438,0.7664,0.9578,0.9314
+U-Net v2 (water_aug),water,test_block,0.4,"epoch 31, augment=True",0,22448,5,113,0.0,0.0,0.0,0.0,0.9998,0.9948
+U-Net v2 (water_aug),water,val_patches,0.4,"epoch 31, augment=True",993,12656,355,340,0.7408,0.5883,0.7366,0.7449,0.9727,0.9515
+U-Net v2 (water_aug),water,test_patches,0.4,"epoch 31, augment=True",0,13358,5,50,0.0,0.0,0.0,0.0,0.9996,0.9959
+U-Net v2 (water_no_aug),water,val_block,0.7,"epoch 22, augment=False",2743,23275,617,1079,0.7639,0.6179,0.8164,0.7177,0.9742,0.9388
+U-Net v2 (water_no_aug),water,test_block,0.7,"epoch 22, augment=False",0,22453,0,113,0.0,0.0,0.0,0.0,1.0,0.995
+U-Net v2 (water_no_aug),water,val_patches,0.7,"epoch 22, augment=False",989,12842,169,344,0.7941,0.6585,0.8541,0.7419,0.987,0.9642
+U-Net v2 (water_no_aug),water,test_patches,0.7,"epoch 22, augment=False",0,13363,0,50,0.0,0.0,0.0,0.0,1.0,0.9963

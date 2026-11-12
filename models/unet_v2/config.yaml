@@ -1,0 +1,34 @@
+# UrbanFlood360 U-Net v2 training configuration.
+# Paths are relative to the project root.
+data:
+  sar_stack: data/processed/sar_features/sar_features_6ch.tif
+  label: data/processed/unet_dataset/labels/flood_reference.tif
+  block_grid: [4, 4]          # identical to data/processed/unet_dataset/dataset_config.yaml
+  val_block: [1, 2]
+  test_block: [2, 1]
+  buffer_m: 150
+  window: 64                  # training window size (px, 10 m pixels -> 640 m)
+  min_labeled: 0.10           # min fraction of labelled pixels in a training window
+
+model:
+  base_channels: 32
+  dropout: 0.3
+
+train:
+  epochs: 80
+  min_epochs: 20              # no checkpoint selection / early stopping before this epoch
+  patience: 20                # early stopping on val Dice (best threshold in 0.3-0.7)
+  windows_per_epoch: 1024
+  batch_size: 16
+  lr: 0.001
+  weight_decay: 0.0001
+  bce_weight: 0.5             # loss = 0.5 * weighted BCE + 0.5 * Dice
+  pos_weight: auto            # auto = non-flood/flood ratio in the train region, capped at 10
+  augment: true               # paired rot90 + flip
+  ema_decay: 0.995            # EMA of weights, ~200 steps (~3 epochs) memory
+  seed: 42
+
+inference:
+  tile: 128
+  overlap: 32
+  batch_size: 16

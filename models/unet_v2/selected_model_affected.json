@@ -1,0 +1,9 @@
+{
+  "target": "affected",
+  "target_description": "flood-affected ground (EMSR773 'Flooded area' + 'Flood trace')",
+  "run": "affected_aug",
+  "checkpoint": "models/unet_v2/runs/affected_aug/best_model.pt",
+  "threshold": 0.35,
+  "val_block_dice": 0.7778,
+  "selection_rule": "highest val_block Dice among U-Net v2 runs trained on this target (test block not used)"
+}

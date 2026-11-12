@@ -1,0 +1,25 @@
+{
+  "run": "water_aug",
+  "best_epoch": 31,
+  "epochs_run": 51,
+  "threshold": 0.4,
+  "val": {
+    "threshold": 0.4,
+    "tp": 2929,
+    "tn": 22883,
+    "fp": 1009,
+    "fn": 893,
+    "dice": 0.7548969072163976,
+    "iou": 0.606292693024093,
+    "precision": 0.7437785678007253,
+    "recall": 0.766352694923923,
+    "specificity": 0.9577682906411787,
+    "accuracy": 0.9313704264992086
+  },
+  "total_minutes": 7.02,
+  "device": "mps",
+  "parameters": 7763905,
+  "pos_weight": 6.656805019305019,
+  "augment": true,
+  "test_block_accessed": false
+}

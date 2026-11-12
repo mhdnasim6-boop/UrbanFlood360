@@ -1,0 +1,7 @@
+region,buildings,n,in_emsr_extent,recall_affected,recall_affected_or_possibly,precision_affected,flagged_outside_extent
+all imaged area,all buildings,12648,1953,0.864,0.914,0.646,0.087
+all imaged area,residential,9459,494,0.759,0.824,0.408,0.061
+validation block,all buildings,3066,545,0.932,0.96,0.73,0.075
+validation block,residential,2220,169,0.84,0.893,0.768,0.021
+test block (held out),all buildings,3799,431,0.805,0.898,0.6,0.069
+test block (held out),residential,2944,19,0.737,0.895,0.078,0.057

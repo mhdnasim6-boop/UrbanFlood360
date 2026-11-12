@@ -1,0 +1,274 @@
+== 3/7 Comparing methods and selecting one U-Net v2 run per target (validation block only)
+Target: standing water (EMSR773 'Flooded area')
+
+=== val_block (flood px 3822, labelled px 27714)
+                                     trained_on  threshold    dice     iou  precision  recall  specificity     fp    fn
+method                                                                                                                 
+Otsu: low post-event VV                       -       0.50  0.5703  0.3989     0.8441  0.4307       0.9873    304  2176
+Otsu: VV decrease                             -       0.50  0.5466  0.3761     0.9072  0.3912       0.9936    153  2327
+Repository U-Net (BCE baseline)           water       0.50  0.7499  0.5999     0.7644  0.7360       0.9637    867  1009
+Repository U-Net (weighted BCE+Dice)      water       0.40  0.7656  0.6203     0.7294  0.8056       0.9522   1142   743
+U-Net v2 (affected_aug)                affected       0.35  0.3654  0.2235     0.2239  0.9922       0.4499  13143    30
+U-Net v2 (affected_no_aug)             affected       0.30  0.4120  0.2594     0.2678  0.8919       0.6100   9319   413
+U-Net v2 (water_aug)                      water       0.40  0.7549  0.6063     0.7438  0.7664       0.9578   1009   893
+U-Net v2 (water_no_aug)                   water       0.70  0.7639  0.6179     0.8164  0.7177       0.9742    617  1079
+
+=== test_block (flood px 113, labelled px 22566)
+                                     trained_on  threshold    dice     iou  precision  recall  specificity    fp   fn
+method                                                                                                               
+Otsu: low post-event VV                       -       0.50  0.0055  0.0028     0.0033  0.0177       0.9730   606  111
+Otsu: VV decrease                             -       0.50  0.0199  0.0101     0.0227  0.0177       0.9962    86  111
+Repository U-Net (BCE baseline)           water       0.50  0.0000  0.0000     0.0000  0.0000       1.0000     0  113
+Repository U-Net (weighted BCE+Dice)      water       0.40  0.0000  0.0000     0.0000  0.0000       0.9999     3  113
+U-Net v2 (affected_aug)                affected       0.35  0.0306  0.0155     0.0159  0.4248       0.8675  2975   65
+U-Net v2 (affected_no_aug)             affected       0.30  0.0386  0.0197     0.0201  0.5044       0.8762  2780   56
+U-Net v2 (water_aug)                      water       0.40  0.0000  0.0000     0.0000  0.0000       0.9998     5  113
+U-Net v2 (water_no_aug)                   water       0.70  0.0000  0.0000     0.0000  0.0000       1.0000     0  113
+
+=== val_patches (flood px 1333, labelled px 14344)
+                                     trained_on  threshold    dice     iou  precision  recall  specificity    fp   fn
+method                                                                                                               
+Otsu: low post-event VV                       -       0.50  0.4600  0.2987     0.6809  0.3473       0.9833   217  870
+Otsu: VV decrease                             -       0.50  0.4549  0.2944     0.7985  0.3181       0.9918   107  909
+Repository U-Net (BCE baseline)           water       0.50  0.7906  0.6536     0.8318  0.7532       0.9844   203  329
+Repository U-Net (weighted BCE+Dice)      water       0.40  0.8077  0.6774     0.7552  0.8680       0.9712   375  176
+U-Net v2 (affected_aug)                affected       0.35  0.3306  0.1981     0.1984  0.9910       0.5898  5337   12
+U-Net v2 (affected_no_aug)             affected       0.30  0.3408  0.2054     0.2165  0.7997       0.7036  3857  267
+U-Net v2 (water_aug)                      water       0.40  0.7408  0.5883     0.7366  0.7449       0.9727   355  340
+U-Net v2 (water_no_aug)                   water       0.70  0.7941  0.6585     0.8541  0.7419       0.9870   169  344
+
+=== test_patches (flood px 50, labelled px 13413)
+                                     trained_on  threshold    dice     iou  precision  recall  specificity    fp  fn
+method                                                                                                              
+Otsu: low post-event VV                       -       0.50  0.0114  0.0057     0.0066    0.04       0.9776   299  48
+Otsu: VV decrease                             -       0.50  0.0000  0.0000     0.0000    0.00       0.9975    33  50
+Repository U-Net (BCE baseline)           water       0.50  0.0000  0.0000     0.0000    0.00       1.0000     0  50
+Repository U-Net (weighted BCE+Dice)      water       0.40  0.0000  0.0000     0.0000    0.00       1.0000     0  50
+U-Net v2 (affected_aug)                affected       0.35  0.0017  0.0008     0.0009    0.02       0.9132  1160  49
+U-Net v2 (affected_no_aug)             affected       0.30  0.0315  0.0160     0.0165    0.34       0.9243  1012  33
+U-Net v2 (water_aug)                      water       0.40  0.0000  0.0000     0.0000    0.00       0.9996     5  50
+U-Net v2 (water_no_aug)                   water       0.70  0.0000  0.0000     0.0000    0.00       1.0000     0  50
+
+Selected model: U-Net v2 (water_no_aug) (val block Dice 0.7639) -> models/unet_v2/selected_model_water.json
+== 4/7 Full-area water map from models/unet_v2/runs/water_no_aug/best_model.pt (threshold 0.7)
+{
+  "checkpoint": "models/unet_v2/runs/water_no_aug/best_model.pt",
+  "target": "water",
+  "epoch": 22,
+  "threshold": 0.7,
+  "device": "mps",
+  "flooded_km2": 13.607,
+  "valid_km2": 41.633,
+  "n_flood_polygons": 96
+}
+Wrote flood_probability.tif, flood_mask.tif, flood_polygons.gpkg -> /Users/nasim/UrbanFlood360/data/processed/predictions/unet_v2_water
+Target: flood-affected ground (EMSR773 'Flooded area' + 'Flood trace')
+
+=== val_block (flood px 28064, labelled px 51956)
+                           trained_on  threshold    dice     iou  precision  recall  specificity     fp     fn
+method                                                                                                        
+Otsu: low post-event VV             -       0.50  0.1264  0.0675     0.8629  0.0682       0.9873    304  26150
+Otsu: VV decrease                   -       0.50  0.1118  0.0592     0.9161  0.0595       0.9936    153  26394
+U-Net v2 (affected_aug)      affected       0.35  0.7778  0.6363     0.6661  0.9344       0.4499  13143   1842
+U-Net v2 (affected_no_aug)   affected       0.30  0.7208  0.5635     0.6933  0.7506       0.6100   9319   6999
+U-Net v2 (water_aug)            water       0.40  0.2356  0.1336     0.7937  0.1384       0.9578   1009  24181
+U-Net v2 (water_no_aug)         water       0.70  0.2040  0.1136     0.8407  0.1161       0.9742    617  24807
+
+=== test_block (flood px 7249, labelled px 29702)
+                           trained_on  threshold    dice     iou  precision  recall  specificity    fp    fn
+method                                                                                                      
+Otsu: low post-event VV             -       0.50  0.0058  0.0029     0.0366  0.0032       0.9730   606  7226
+Otsu: VV decrease                   -       0.50  0.0133  0.0067     0.3630  0.0068       0.9962    86  7200
+U-Net v2 (affected_aug)      affected       0.35  0.7097  0.5501     0.6540  0.7758       0.8675  2975  1625
+U-Net v2 (affected_no_aug)   affected       0.30  0.3975  0.2481     0.4723  0.3432       0.8762  2780  4761
+U-Net v2 (water_aug)            water       0.40  0.0008  0.0004     0.3750  0.0004       0.9998     5  7246
+U-Net v2 (water_no_aug)         water       0.70  0.0000  0.0000     0.0000  0.0000       1.0000     0  7249
+
+Selected model: U-Net v2 (affected_aug) (val block Dice 0.7778) -> models/unet_v2/selected_model_affected.json
+== 4/7 Full-area affected map from models/unet_v2/runs/affected_aug/best_model.pt (threshold 0.35)
+{
+  "checkpoint": "models/unet_v2/runs/affected_aug/best_model.pt",
+  "target": "affected",
+  "epoch": 21,
+  "threshold": 0.35,
+  "device": "mps",
+  "flooded_km2": 24.893,
+  "valid_km2": 41.633,
+  "n_flood_polygons": 105
+}
+Wrote flood_probability.tif, flood_mask.tif, flood_polygons.gpkg -> /Users/nasim/UrbanFlood360/data/processed/predictions/unet_v2_affected
+== 5/7 Building inventory
+Catastro buildings loaded: 12771 from 6 municipalities
+Dropped 4 buildings outside the AOI -> 12767 kept
+
+Wrote /Users/nasim/UrbanFlood360/data/processed/buildings/buildings_aoi.gpkg
+              buildings  dwellings
+municipality                      
+Alfafar            1873       9480
+Catarroja          3831      12498
+Massanassa         1981       4530
+Paiporta           2294      11988
+Picanya            1497       4884
+Sedavi             1291       4595
+
+By use:
+use
+Residential        9505
+Industrial         2466
+Retail              320
+Public services     199
+Agriculture         150
+Office               95
+Unknown              32
+
+Missing floors: 0, missing floor area: 0
+== 6/7 Building damage assessment (flood-affected map)
+{
+  "parameters": {
+    "ring_m": 10.0,
+    "affected_threshold": 0.5,
+    "possible_threshold": 0.1,
+    "persons_per_dwelling": 2.5
+  },
+  "aoi_km2": 41.63,
+  "flooded_km2": 24.89,
+  "flooded_pct_of_aoi": 59.8,
+  "standing_water_km2": 13.61,
+  "buildings_total": 12767,
+  "buildings_by_class": {
+    "Affected": 2733,
+    "Possibly affected": 626,
+    "Not affected": 9408,
+    "No data": 0
+  },
+  "dwellings_affected": 8359,
+  "dwellings_possibly_affected": 4226,
+  "residents_affected_est": 20898,
+  "floor_area_affected_m2": 3867797,
+  "emsr_validation": {
+    "emsr_points_in_aoi": 1426,
+    "matched_to_building": 1374,
+    "flagged_affected_or_possibly_pct": 91.6,
+    "flagged_affected_pct": 86.0,
+    "by_grade_flagged_pct": {
+      "Damaged": 95.5,
+      "Possibly damaged": 67.9
+    }
+  },
+  "emsr_extent_check": [
+    {
+      "region": "all imaged area",
+      "buildings": "all buildings",
+      "n": 12648,
+      "in_emsr_extent": 1953,
+      "recall_affected": 0.864,
+      "recall_affected_or_possibly": 0.914,
+      "precision_affected": 0.646,
+      "flagged_outside_extent": 0.087
+    },
+    {
+      "region": "all imaged area",
+      "buildings": "residential",
+      "n": 9459,
+      "in_emsr_extent": 494,
+      "recall_affected": 0.759,
+      "recall_affected_or_possibly": 0.824,
+      "precision_affected": 0.408,
+      "flagged_outside_extent": 0.061
+    },
+    {
+      "region": "validation block",
+      "buildings": "all buildings",
+      "n": 3066,
+      "in_emsr_extent": 545,
+      "recall_affected": 0.932,
+      "recall_affected_or_possibly": 0.96,
+      "precision_affected": 0.73,
+      "flagged_outside_extent": 0.075
+    },
+    {
+      "region": "validation block",
+      "buildings": "residential",
+      "n": 2220,
+      "in_emsr_extent": 169,
+      "recall_affected": 0.84,
+      "recall_affected_or_possibly": 0.893,
+      "precision_affected": 0.768,
+      "flagged_outside_extent": 0.021
+    },
+    {
+      "region": "test block (held out)",
+      "buildings": "all buildings",
+      "n": 3799,
+      "in_emsr_extent": 431,
+      "recall_affected": 0.805,
+      "recall_affected_or_possibly": 0.898,
+      "precision_affected": 0.6,
+      "flagged_outside_extent": 0.069
+    },
+    {
+      "region": "test block (held out)",
+      "buildings": "residential",
+      "n": 2944,
+      "in_emsr_extent": 19,
+      "recall_affected": 0.737,
+      "recall_affected_or_possibly": 0.895,
+      "precision_affected": 0.078,
+      "flagged_outside_extent": 0.057
+    }
+  ]
+}
+
+By municipality:
+municipality  buildings  affected  possibly_affected  not_affected  no_data  dwellings_affected  dwellings_possibly  residents_affected_est  floor_area_affected_m2  pct_affected  pct_affected_or_possibly
+     Alfafar       1873       406                 59          1408        0                1631                 840                  4077.5                  968251          21.7                      24.8
+   Catarroja       3831       826                262          2743        0                2632                1213                  6580.0                  964662          21.6                      28.4
+  Massanassa       1981       375                104          1502        0                 640                 579                  1600.0                  523258          18.9                      24.2
+    Paiporta       2294       663                 63          1568        0                2666                 582                  6665.0                  932380          28.9                      31.6
+     Picanya       1497       173                100          1224        0                 252                 408                   630.0                  148447          11.6                      18.2
+      Sedavi       1291       290                 38           963        0                 538                 604                  1345.0                  330799          22.5                      25.4
+
+By use:
+            use  buildings  affected  possibly_affected  not_affected  no_data  dwellings_affected  dwellings_possibly  residents_affected_est  floor_area_affected_m2  pct_affected  pct_affected_or_possibly
+    Agriculture        150        83                  3            64        0                   0                   0                     0.0                   33504          55.3                      57.3
+     Industrial       2466      1421                171           874        0                   1                   3                     2.5                 1410945          57.6                      64.6
+         Office         95        43                  6            46        0                   0                   0                     0.0                  120308          45.3                      51.6
+Public services        199        77                  9           113        0                   0                   0                     0.0                  240063          38.7                      43.2
+    Residential       9505       965                422          8118        0                8354                4221                 20885.0                 1423817          10.2                      14.6
+         Retail        320       134                 13           173        0                   4                   2                    10.0                  633907          41.9                      45.9
+        Unknown         32        10                  2            20        0                   0                   0                     0.0                    5253          31.2                      37.5
+
+Flood extent:
+municipality  area_km2  predicted_flood_km2  predicted_flood_pct  predicted_water_km2  emsr_flood_km2  emsr_water_km2  emsr_trace_km2  emsr_mapped_km2
+     Alfafar     9.903                8.920                 90.1                6.218           2.048           0.485           1.562            3.787
+   Catarroja    13.137                6.939                 52.8                4.307           3.471           1.347           2.125           10.245
+  Massanassa     5.592                4.347                 77.7                2.669           1.835           0.712           1.123            3.571
+    Paiporta     3.954                2.727                 69.0                0.183           2.177           0.039           2.139            3.954
+     Picanya     7.213                0.635                  8.8                0.013           0.609           0.011           0.598            7.213
+      Sedavi     1.833                1.325                 72.3                0.217           0.870           0.023           0.847            1.548
+
+EMSR agreement (rows = EMSR grade, cols = our class):
+our_impact        Affected  No building within 10 m  Not affected  Possibly affected  Total
+damage_gra                                                                                 
+Damaged               1074                       36            53                 54   1217
+Destroyed                0                        2             0                  0      2
+Possibly damaged       107                       14            62                 24    207
+Total                 1181                       52           115                 78   1426
+
+Building-level check vs EMSR flood extent:
+               region     buildings     n  in_emsr_extent  recall_affected  recall_affected_or_possibly  precision_affected  flagged_outside_extent
+      all imaged area all buildings 12648            1953            0.864                        0.914               0.646                   0.087
+      all imaged area   residential  9459             494            0.759                        0.824               0.408                   0.061
+     validation block all buildings  3066             545            0.932                        0.960               0.730                   0.075
+     validation block   residential  2220             169            0.840                        0.893               0.768                   0.021
+test block (held out) all buildings  3799             431            0.805                        0.898               0.600                   0.069
+test block (held out)   residential  2944              19            0.737                        0.895               0.078                   0.057
+== 7/7 Dashboard assets
+affected_mask.png              0.02 MB
+buildings.geojson              8.51 MB
+emsr_points.geojson            0.30 MB
+emsr_reference.geojson         0.45 MB
+municipalities.geojson         0.06 MB
+overlays.json                  0.00 MB
+water_mask.png                 0.01 MB
+Done. Start the dashboard: /Users/nasim/Anaconda/anaconda3/envs/urbanflood/bin/streamlit run dashboard/app.py

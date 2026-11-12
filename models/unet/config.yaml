@@ -1,0 +1,59 @@
+repository:
+  url: https://github.com/chathumal93/Pytorch-UNet-Flood-Segmentation
+  commit: 717e0abad6d71d6fd4059aad8ad8a98a6ebc1286
+  license: "none present in repository - see docs/UNET_REPOSITORY.md"
+
+architecture:
+  name: Unet (repository code, models/unet/model.py)
+  in_channels: 6
+  out_channels: 1
+  final_activation: sigmoid (applied inside model.forward, repository behavior)
+  total_parameters: 7760961
+  trainable_parameters: 7760961
+  parameter_delta_vs_original_4ch: 576   # = (6-4) * 32 out-channels * 3x3 kernel, first conv only
+
+dataset:
+  sar_stack: data/processed/sar_features/sar_features_6ch.tif
+  label_raster: data/processed/unet_dataset/labels/flood_reference.tif
+  patches_dir: data/processed/unet_dataset/patches
+  patch_size: 64
+  channels:
+    - VV_pre_dB
+    - VH_pre_dB
+    - VV_post_dB
+    - VH_post_dB
+    - VV_change_dB
+    - VH_change_dB
+  label_encoding: {0: non-flood, 1: flood, 255: ignore}
+  split:
+    grid: [4, 4]
+    val_block: [1, 2]
+    test_block: [2, 1]
+    buffer_m: 150
+    measured_min_separation_m: 480
+    train_patches: 301
+    val_patches: 14
+    test_patches: 13
+
+training:
+  batch_size: 8
+  optimizer: Adam
+  learning_rate: 0.001
+  loss: BCELoss (repository code, masked to exclude label==255)
+  scheduler: none (repository has none)
+  epochs: NOT RUN in this stage (smoke test only)
+  random_seed: 42
+
+normalization:
+  method_active: mean_std
+  fitted_from: train_only (301 patches)
+  stats_file: models/unet/normalization_stats.json
+  alternative_available: percentile (p2/p98)
+
+device:
+  priority: [mps, cuda, cpu]
+  selected_this_run: mps
+  pytorch_version: "2.10.0"
+  python_env: /Users/nasim/Anaconda/anaconda3 (base conda env)
+
+ignore_label: 255

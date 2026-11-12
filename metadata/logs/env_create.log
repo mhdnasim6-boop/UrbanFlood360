@@ -1,0 +1,66 @@
+2 channel Terms of Service accepted
+Retrieving notices: ...working... done
+Channels:
+ - defaults
+Platform: osx-arm64
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /Users/nasim/Anaconda/anaconda3/envs/urbanflood
+
+  added / updated specs:
+    - pip
+    - python=3.12
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    ca-certificates-2026.9.25  |       hca03da5_0         107 KB
+    libexpat-2.9.0             |       h50f4ffc_0         117 KB
+    ncurses-6.6                |       h2f07c83_0         829 KB
+    openssl-3.5.9              |       ha0b305a_0         4.9 MB
+    packaging-26.3             |  py312hca03da5_0         374 KB
+    pip-26.2.1                 |     pyhc872135_0         1.1 MB
+    python-3.12.15             |       h64886fc_0        12.8 MB
+    setuptools-84.0.0          |  py312hca03da5_0         1.2 MB
+    sqlite-3.53.4              |       h1cce5ff_0         1.2 MB
+    wheel-0.47.0               |  py312hca03da5_0          72 KB
+    xz-5.8.4                   |       h9596fca_0         265 KB
+    ------------------------------------------------------------
+                                           Total:        22.9 MB
+
+The following NEW packages will be INSTALLED:
+
+  bzip2              pkgs/main/osx-arm64::bzip2-1.0.8-h80987f9_6 
+  ca-certificates    pkgs/main/osx-arm64::ca-certificates-2026.9.25-hca03da5_0 
+  libcxx             pkgs/main/osx-arm64::libcxx-22.1.2-hf894667_0 
+  libexpat           pkgs/main/osx-arm64::libexpat-2.9.0-h50f4ffc_0 
+  libffi             pkgs/main/osx-arm64::libffi-3.4.8-h4a3ca97_3 
+  libzlib            pkgs/main/osx-arm64::libzlib-1.3.2-hb4cf58c_0 
+  ncurses            pkgs/main/osx-arm64::ncurses-6.6-h2f07c83_0 
+  openssl            pkgs/main/osx-arm64::openssl-3.5.9-ha0b305a_0 
+  packaging          pkgs/main/osx-arm64::packaging-26.3-py312hca03da5_0 
+  pip                pkgs/main/noarch::pip-26.2.1-pyhc872135_0 
+  python             pkgs/main/osx-arm64::python-3.12.15-h64886fc_0 
+  readline           pkgs/main/osx-arm64::readline-8.3-h0b18652_0 
+  setuptools         pkgs/main/osx-arm64::setuptools-84.0.0-py312hca03da5_0 
+  sqlite             pkgs/main/osx-arm64::sqlite-3.53.4-h1cce5ff_0 
+  tk                 pkgs/main/osx-arm64::tk-8.6.15-hcd8a7d5_0 
+  tzdata             pkgs/main/noarch::tzdata-2026c-he532380_0 
+  wheel              pkgs/main/osx-arm64::wheel-0.47.0-py312hca03da5_0 
+  xz                 pkgs/main/osx-arm64::xz-5.8.4-h9596fca_0 
+  zlib               pkgs/main/osx-arm64::zlib-1.3.2-hb4cf58c_0 
+
+
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+
+Channel "defaults" has the following notices:
+  [warning] -- Wed Sep 30 00:00:00 2026
+  Anaconda will stop building new Python 3.10 packages on the main channel after October 31, 2026. Existing Python 3.10 packages will stay available but will no longer get new builds or security fixes. We recommend upgrading to Python 3.11 or later. Details: https://www.anaconda.com/docs/reference/policies-practices/python-version-support?utm_source=channel_notices
+

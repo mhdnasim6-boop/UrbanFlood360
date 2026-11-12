@@ -1,0 +1,105 @@
+{
+  "flood_map": {
+    "checkpoint": "models/unet_v2/runs/affected_aug/best_model.pt",
+    "target": "affected",
+    "epoch": 21,
+    "threshold": 0.35,
+    "device": "mps",
+    "flooded_km2": 24.893,
+    "valid_km2": 41.633,
+    "n_flood_polygons": 105
+  },
+  "parameters": {
+    "ring_m": 10.0,
+    "affected_threshold": 0.5,
+    "possible_threshold": 0.1,
+    "persons_per_dwelling": 2.5
+  },
+  "aoi_km2": 41.63,
+  "flooded_km2": 24.89,
+  "flooded_pct_of_aoi": 59.8,
+  "standing_water_km2": 13.61,
+  "buildings_total": 12767,
+  "buildings_by_class": {
+    "Affected": 2733,
+    "Possibly affected": 626,
+    "Not affected": 9408,
+    "No data": 0
+  },
+  "dwellings_affected": 8359,
+  "dwellings_possibly_affected": 4226,
+  "residents_affected_est": 20898,
+  "floor_area_affected_m2": 3867797,
+  "emsr_validation": {
+    "emsr_points_in_aoi": 1426,
+    "matched_to_building": 1374,
+    "flagged_affected_or_possibly_pct": 91.6,
+    "flagged_affected_pct": 86.0,
+    "by_grade_flagged_pct": {
+      "Damaged": 95.5,
+      "Possibly damaged": 67.9
+    }
+  },
+  "emsr_extent_check": [
+    {
+      "region": "all imaged area",
+      "buildings": "all buildings",
+      "n": 12648,
+      "in_emsr_extent": 1953,
+      "recall_affected": 0.864,
+      "recall_affected_or_possibly": 0.914,
+      "precision_affected": 0.646,
+      "flagged_outside_extent": 0.087
+    },
+    {
+      "region": "all imaged area",
+      "buildings": "residential",
+      "n": 9459,
+      "in_emsr_extent": 494,
+      "recall_affected": 0.759,
+      "recall_affected_or_possibly": 0.824,
+      "precision_affected": 0.408,
+      "flagged_outside_extent": 0.061
+    },
+    {
+      "region": "validation block",
+      "buildings": "all buildings",
+      "n": 3066,
+      "in_emsr_extent": 545,
+      "recall_affected": 0.932,
+      "recall_affected_or_possibly": 0.96,
+      "precision_affected": 0.73,
+      "flagged_outside_extent": 0.075
+    },
+    {
+      "region": "validation block",
+      "buildings": "residential",
+      "n": 2220,
+      "in_emsr_extent": 169,
+      "recall_affected": 0.84,
+      "recall_affected_or_possibly": 0.893,
+      "precision_affected": 0.768,
+      "flagged_outside_extent": 0.021
+    },
+    {
+      "region": "test block (held out)",
+      "buildings": "all buildings",
+      "n": 3799,
+      "in_emsr_extent": 431,
+      "recall_affected": 0.805,
+      "recall_affected_or_possibly": 0.898,
+      "precision_affected": 0.6,
+      "flagged_outside_extent": 0.069
+    },
+    {
+      "region": "test block (held out)",
+      "buildings": "residential",
+      "n": 2944,
+      "in_emsr_extent": 19,
+      "recall_affected": 0.737,
+      "recall_affected_or_possibly": 0.895,
+      "precision_affected": 0.078,
+      "flagged_outside_extent": 0.057
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "device": "mps",
+  "n_total_params": 7760961,
+  "n_trainable_params": 7760961,
+  "train_loss": 0.7686136960983276,
+  "val_loss": 0.7421945929527283,
+  "val_iou": 0.010097331655928963,
+  "n_ignored_px": 2214,
+  "n_total_px": 32768
+}

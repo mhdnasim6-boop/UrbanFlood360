@@ -1,0 +1,38 @@
+{
+  "method_active": "mean_std",
+  "fitted_from": "train_region_pixels",
+  "channels": [
+    "VV_pre_dB",
+    "VH_pre_dB",
+    "VV_post_dB",
+    "VH_post_dB",
+    "VV_change_dB",
+    "VH_change_dB"
+  ],
+  "per_channel": {
+    "VV_pre_dB": {
+      "mean": -9.646784782409668,
+      "std": 3.096181869506836
+    },
+    "VH_pre_dB": {
+      "mean": -17.12589454650879,
+      "std": 3.1290643215179443
+    },
+    "VV_post_dB": {
+      "mean": -12.488314628601074,
+      "std": 6.222897052764893
+    },
+    "VH_post_dB": {
+      "mean": -20.637859344482422,
+      "std": 7.3735032081604
+    },
+    "VV_change_dB": {
+      "mean": -2.8415307998657227,
+      "std": 5.905730724334717
+    },
+    "VH_change_dB": {
+      "mean": -3.511964797973633,
+      "std": 6.615495681762695
+    }
+  }
+}

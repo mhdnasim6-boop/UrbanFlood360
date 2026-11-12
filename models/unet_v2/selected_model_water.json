@@ -1,0 +1,9 @@
+{
+  "target": "water",
+  "target_description": "standing water (EMSR773 'Flooded area')",
+  "run": "water_no_aug",
+  "checkpoint": "models/unet_v2/runs/water_no_aug/best_model.pt",
+  "threshold": 0.7,
+  "val_block_dice": 0.7639,
+  "selection_rule": "highest val_block Dice among U-Net v2 runs trained on this target (test block not used)"
+}

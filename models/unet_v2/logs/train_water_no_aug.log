@@ -1,0 +1,50 @@
+Device: mps | torch 2.14.1
+Train region: 895946 px | labelled 158649 (flood 20720, non-flood 137929) | pos_weight 6.66
+Candidate training windows: 199834 | augment: False
+U-Net parameters: 7,763,905
+ep   1 | loss 0.4704 | val loss 1.0032 | Dice@0.5 0.000 | best-thr Dice 0.344 (t=0.45) | 9.0s
+ep   2 | loss 0.3075 | val loss 0.9811 | Dice@0.5 0.195 | best-thr Dice 0.718 (t=0.4) | 9.1s
+ep   3 | loss 0.2382 | val loss 0.9605 | Dice@0.5 0.363 | best-thr Dice 0.737 (t=0.3) | 7.9s
+ep   4 | loss 0.1684 | val loss 0.9639 | Dice@0.5 0.437 | best-thr Dice 0.628 (t=0.3) | 8.7s
+ep   5 | loss 0.1522 | val loss 0.9711 | Dice@0.5 0.497 | best-thr Dice 0.630 (t=0.3) | 8.0s
+ep   6 | loss 0.1586 | val loss 0.8965 | Dice@0.5 0.603 | best-thr Dice 0.695 (t=0.3) | 8.0s
+ep   7 | loss 0.1668 | val loss 0.7735 | Dice@0.5 0.712 | best-thr Dice 0.735 (t=0.3) | 8.0s
+ep   8 | loss 0.1232 | val loss 0.7209 | Dice@0.5 0.742 | best-thr Dice 0.747 (t=0.4) | 8.0s
+ep   9 | loss 0.1018 | val loss 0.7097 | Dice@0.5 0.751 | best-thr Dice 0.752 (t=0.6) | 8.0s
+ep  10 | loss 0.1012 | val loss 0.7155 | Dice@0.5 0.753 | best-thr Dice 0.754 (t=0.55) | 8.0s
+ep  11 | loss 0.1085 | val loss 0.7223 | Dice@0.5 0.751 | best-thr Dice 0.754 (t=0.7) | 8.0s
+ep  12 | loss 0.0706 | val loss 0.7316 | Dice@0.5 0.753 | best-thr Dice 0.756 (t=0.65) | 7.9s
+ep  13 | loss 0.0963 | val loss 0.7315 | Dice@0.5 0.755 | best-thr Dice 0.758 (t=0.65) | 7.9s
+ep  14 | loss 0.0919 | val loss 0.7555 | Dice@0.5 0.756 | best-thr Dice 0.758 (t=0.6) | 8.1s
+ep  15 | loss 0.0694 | val loss 0.7591 | Dice@0.5 0.757 | best-thr Dice 0.758 (t=0.6) | 7.9s
+ep  16 | loss 0.0532 | val loss 0.7489 | Dice@0.5 0.758 | best-thr Dice 0.759 (t=0.45) | 8.0s
+ep  17 | loss 0.0589 | val loss 0.7354 | Dice@0.5 0.760 | best-thr Dice 0.763 (t=0.65) | 7.9s
+ep  18 | loss 0.0708 | val loss 0.7594 | Dice@0.5 0.759 | best-thr Dice 0.760 (t=0.45) | 8.2s
+ep  19 | loss 0.0540 | val loss 0.7488 | Dice@0.5 0.761 | best-thr Dice 0.761 (t=0.5) | 8.0s
+ep  20 | loss 0.0570 | val loss 0.7604 | Dice@0.5 0.764 | best-thr Dice 0.764 (t=0.5) | 8.0s *
+ep  21 | loss 0.0409 | val loss 0.7687 | Dice@0.5 0.763 | best-thr Dice 0.764 (t=0.6) | 8.0s
+ep  22 | loss 0.0460 | val loss 0.7611 | Dice@0.5 0.762 | best-thr Dice 0.764 (t=0.7) | 8.1s *
+ep  23 | loss 0.0372 | val loss 0.7775 | Dice@0.5 0.760 | best-thr Dice 0.761 (t=0.6) | 8.0s
+ep  24 | loss 0.0296 | val loss 0.7796 | Dice@0.5 0.760 | best-thr Dice 0.761 (t=0.3) | 8.0s
+ep  25 | loss 0.0291 | val loss 0.7788 | Dice@0.5 0.761 | best-thr Dice 0.762 (t=0.4) | 8.0s
+ep  26 | loss 0.0262 | val loss 0.7797 | Dice@0.5 0.760 | best-thr Dice 0.760 (t=0.5) | 8.0s
+ep  27 | loss 0.0281 | val loss 0.8095 | Dice@0.5 0.756 | best-thr Dice 0.756 (t=0.5) | 8.0s
+ep  28 | loss 0.0511 | val loss 0.8079 | Dice@0.5 0.758 | best-thr Dice 0.759 (t=0.7) | 8.0s
+ep  29 | loss 0.0324 | val loss 0.8296 | Dice@0.5 0.755 | best-thr Dice 0.757 (t=0.65) | 8.0s
+ep  30 | loss 0.0287 | val loss 0.8598 | Dice@0.5 0.756 | best-thr Dice 0.756 (t=0.5) | 8.0s
+ep  31 | loss 0.0261 | val loss 0.8818 | Dice@0.5 0.752 | best-thr Dice 0.753 (t=0.4) | 8.0s
+ep  32 | loss 0.0197 | val loss 0.8985 | Dice@0.5 0.750 | best-thr Dice 0.752 (t=0.4) | 8.1s
+ep  33 | loss 0.0169 | val loss 0.9118 | Dice@0.5 0.752 | best-thr Dice 0.752 (t=0.6) | 8.0s
+ep  34 | loss 0.0173 | val loss 0.9305 | Dice@0.5 0.750 | best-thr Dice 0.750 (t=0.45) | 8.1s
+ep  35 | loss 0.0213 | val loss 0.9357 | Dice@0.5 0.753 | best-thr Dice 0.754 (t=0.35) | 8.1s
+ep  36 | loss 0.0201 | val loss 0.9456 | Dice@0.5 0.753 | best-thr Dice 0.755 (t=0.6) | 8.0s
+ep  37 | loss 0.0195 | val loss 0.9461 | Dice@0.5 0.755 | best-thr Dice 0.756 (t=0.4) | 8.0s
+ep  38 | loss 0.0518 | val loss 0.9699 | Dice@0.5 0.756 | best-thr Dice 0.757 (t=0.55) | 8.0s
+ep  39 | loss 0.0191 | val loss 0.9944 | Dice@0.5 0.754 | best-thr Dice 0.757 (t=0.35) | 8.2s
+ep  40 | loss 0.0217 | val loss 1.0353 | Dice@0.5 0.752 | best-thr Dice 0.752 (t=0.5) | 8.1s
+ep  41 | loss 0.0149 | val loss 1.0620 | Dice@0.5 0.750 | best-thr Dice 0.752 (t=0.3) | 8.1s
+ep  42 | loss 0.0160 | val loss 1.0528 | Dice@0.5 0.749 | best-thr Dice 0.750 (t=0.4) | 8.2s
+Early stop: no val improvement for 20 epochs.
+
+Best epoch 22: val Dice 0.7639 IoU 0.6179 P 0.816 R 0.718 at threshold 0.7
+Total time 5.7 min -> /Users/nasim/UrbanFlood360/models/unet_v2/runs/no_aug

@@ -1,0 +1,8 @@
+use,buildings,affected,possibly_affected,not_affected,no_data,dwellings_affected,dwellings_possibly,residents_affected_est,floor_area_affected_m2,pct_affected,pct_affected_or_possibly
+Agriculture,150,83,3,64,0,0,0,0.0,33504,55.3,57.3
+Industrial,2466,1421,171,874,0,1,3,2.5,1410945,57.6,64.6
+Office,95,43,6,46,0,0,0,0.0,120308,45.3,51.6
+Public services,199,77,9,113,0,0,0,0.0,240063,38.7,43.2
+Residential,9505,965,422,8118,0,8354,4221,20885.0,1423817,10.2,14.6
+Retail,320,134,13,173,0,4,2,10.0,633907,41.9,45.9
+Unknown,32,10,2,20,0,0,0,0.0,5253,31.2,37.5
