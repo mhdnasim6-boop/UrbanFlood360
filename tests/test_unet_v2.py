@@ -114,3 +114,21 @@ def test_analyse_event_end_to_end(tmp_path):
     assert s["buildings"]["total"] == 2 and sum(s["buildings"]["by_class"].values()) == 2
     for f in ("flood_mask.tif", "flood_probability.tif", "buildings_impact.geojson", "results.zip"):
         assert (tmp_path / "out" / f).exists()
+
+
+def test_choose_pair_same_orbit_closest_after():
+    """Picks last-before / first-after from one orbit track; prefers the after image closest to the flood."""
+    import datetime as dt
+    import pandas as pd
+    from scripts.fetch_event_data import choose_pair
+
+    d = lambda s: dt.date.fromisoformat(s)  # noqa: E731
+    rows = [  # date, orbit, coverage, when, days
+        ("2024-10-13", 8, 1.0, "before", -16), ("2024-10-20", 110, 1.0, "before", -9),
+        ("2024-10-25", 8, 1.0, "before", -4), ("2024-11-01", 110, 1.0, "after", 3),
+        ("2024-11-06", 8, 1.0, "after", 8), ("2024-10-31", 103, 0.2, "after", 2),   # too little coverage
+    ]
+    scenes = pd.DataFrame([dict(date=d(a), orbit=o, coverage=c, when=w, days_from_flood=k, direction="x",
+                                platform="S1A", items=[]) for a, o, c, w, k in rows])
+    before, after = choose_pair(scenes)
+    assert (before.orbit, str(before.date), str(after.date)) == (110, "2024-10-20", "2024-11-01")

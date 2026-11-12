@@ -267,6 +267,8 @@ def prepare_buildings(path, grid):
     idc = pick(b, ["building_id", "localId", "id", "osm_id", "@id", "fid"])
     out["building_id"] = b[idc].astype(str).values if idc else [f"B{i + 1}" for i in range(len(b))]
     dc = pick(b, DWELLING_COLUMNS)
+    if dc and pd.to_numeric(b[dc], errors="coerce").notna().mean() < 0.5:
+        dc = None        # e.g. OpenStreetMap building:flats, mapped on a few buildings only: too sparse to sum
     out["dwellings"] = pd.to_numeric(b[dc], errors="coerce").values if dc else np.nan
     uc = pick(b, USE_COLUMNS)
     use = b[uc].astype(str).map(lambda v: USE_LABELS.get(v, v)).replace({"yes": "Unknown", "None": "Unknown",
@@ -364,7 +366,7 @@ def analyse(pre, post, output_dir, aoi=None, buildings=None, band_order=None, wi
             columns_used=cols,
         )
         if not has_dw:
-            notes.append("The building file has no dwellings column, so residents could not be estimated.")
+            notes.append("The building data has no usable dwelling counts (missing, or filled in for fewer than half the buildings, as is usual in OpenStreetMap), so dwellings and residents are not estimated.")
 
     summary["runtime_s"] = round(time.time() - t0, 1)
     json.dump(summary, open(out / "summary.json", "w"), indent=2, default=str)

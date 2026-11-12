@@ -8,11 +8,16 @@ Picanya and Sedaví (41.6 km²).
 - **Flood maps:** U-Net flood mapping is trained and evaluated, with two maps: flood-affected ground and standing
   water.
 - **Damage assessment:** done for 12,767 Catastro buildings, checked against Copernicus EMSR773.
-- **Dashboard:** an interactive Streamlit dashboard with two pages:
-  - **Analyse a new flood event**: upload a before and an after Sentinel-1 image (plus, optionally, an area
-    boundary and building footprints) and get a flood map and building damage assessment
-    (`dashboard/analyse.py` → `scripts/analyse_event.py`).
-  - **Valencia case study**: the 2024 results below.
+- **Dashboard:** one simple page (`dashboard/simple.py`): upload a Sentinel-1 GeoTIFF from before and one from
+  after the flood, press *Map the flood*, and get the flood map, the number and list of affected buildings, and
+  downloads (flood map GeoTIFF, buildings CSV, everything as ZIP). Buildings come from OpenStreetMap for the image
+  area, or from a building file you add. A *Valencia 2024 example* button runs the case study.
+  More detailed pages are kept in `dashboard/` (download.py: automatic Sentinel-1 download; analyse.py: upload with
+  all settings; valencia.py: case-study dashboard) and can be switched back on in `dashboard/app.py`.
+- **Known limitation:** the current U-Net was trained on one Valencia image pair (orbit 103, SNAP sigma0). On the
+  automatically downloaded Valencia pair (orbit 110, gamma0) its test-block Dice drops from 0.71 to 0.46 and it
+  over-predicts flooding (`scripts/validate_on_valencia.py`). A model trained on UrbanSARFloods
+  (`kaggle_kernel_v2/`) is meant to fix this.
 
 Full write-up: [reports/unet_v2_flood_damage_report.md](reports/unet_v2_flood_damage_report.md).
 The data-acquisition stage is documented in [docs/README_acquisition_stage.md](docs/README_acquisition_stage.md).
@@ -27,7 +32,14 @@ The data-acquisition stage is documented in [docs/README_acquisition_stage.md](d
 SKIP_TRAINING=1 ./run_pipeline.sh
 ./run_pipeline.sh
 
-# analyse a new event from the command line (same as the dashboard page)
+# download + analyse a flood from the command line (same as the start page)
+~/Anaconda/anaconda3/envs/urbanflood/bin/python scripts/fetch_event_data.py --place "Paiporta, Valencia, Spain" \
+    --flood-date 2024-10-29 --analyse --output-dir outputs/user_runs/paiporta
+
+# score a flood map of the Valencia area against Copernicus EMSR773
+~/Anaconda/anaconda3/envs/urbanflood/bin/python scripts/validate_on_valencia.py outputs/user_runs/paiporta/flood_mask.tif
+
+# analyse your own images from the command line (same as the upload page)
 ~/Anaconda/anaconda3/envs/urbanflood/bin/python scripts/analyse_event.py --pre before.tif --post after.tif \
     --aoi area.geojson --buildings buildings.gpkg --output-dir outputs/user_runs/my_event
 
@@ -36,7 +48,8 @@ SKIP_TRAINING=1 ./run_pipeline.sh
 ```
 
 The `urbanflood` conda environment (Python 3.12, PyTorch with Apple MPS, rasterio, geopandas, Streamlit, folium,
-plotly) was created for this work; the install command is in the report, §7.
+plotly) was created for this work; the install command is in the report, §7. The download page also needs
+`pip install pystac-client planetary-computer`.
 
 ## Results at a glance
 
@@ -87,7 +100,7 @@ UrbanFlood360/
 │   ├── unet/                        # earlier repository U-Net baseline
 │   └── unet_v2/                     # U-Net v2 code, configs, runs/, selected_model_*.json
 ├── scripts/                         # pipeline steps (see above) + earlier preprocessing scripts
-├── dashboard/                       # Streamlit app: app.py (router), analyse.py (new events), valencia.py
+├── dashboard/                       # Streamlit: app.py (router), download.py, analyse.py, valencia.py, results_view.py
 ├── outputs/
 │   ├── tables/                      # model comparison, damage summaries, EMSR checks
 │   ├── dashboard/                   # web-ready map layers
