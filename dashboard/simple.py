@@ -22,6 +22,7 @@ import geopandas as gpd
 import pandas as pd
 import rasterio
 import streamlit as st
+from branca.element import MacroElement, Template
 from folium.raster_layers import ImageOverlay
 from rasterio.warp import transform_bounds
 from shapely.geometry import box
@@ -242,17 +243,67 @@ if b is not None:
 m.fit_bounds(bounds)
 folium.LayerControl(collapsed=False).add_to(m)
 
-legend = [f'<span style="color:rgb{FLOOD_RGB}">■</span> Flooded area']
-if has_damage:
-    legend += [f'<span style="color:{COLORS[k]}">■</span> {k} damage' for k in ["Severe", "Moderate", "Minor"]]
-else:
-    legend += [f'<span style="color:{COLORS["Affected"]}">■</span> Affected building']
-legend += [f'<span style="color:{COLORS["Possibly affected"]}">■</span> Possibly affected',
-           '<span style="color:#6d28d9">●</span> Critical facility']
-st.markdown(" &nbsp; ".join(legend), unsafe_allow_html=True)
+
+def map_legend():
+    """Legend box drawn inside the map (bottom left), listing only what this result has."""
+    sq = '<span style="display:inline-block;width:14px;height:11px;margin-right:7px;vertical-align:-1px;' \
+         'border-radius:2px;background:{}"></span>{}'
+    rows = ['<div><b>Flood</b></div>', sq.format(f"rgba{FLOOD_RGB + (0.75,)}", "Flooded area (radar)")]
+    if b is not None and (b.impact != "Not affected").any():
+        rows.append('<div style="margin-top:6px"><b>Buildings</b></div>')
+        if has_damage:
+            rows += [sq.format(COLORS["Severe"], "Severe damage (water ≥ 1.5 m)"),
+                     sq.format(COLORS["Moderate"], "Moderate damage (0.5–1.5 m)"),
+                     sq.format(COLORS["Minor"], "Minor damage (&lt; 0.5 m)")]
+        else:
+            rows.append(sq.format(COLORS["Affected"], "Affected (≥ 50% flooded around)"))
+        rows.append(sq.format(COLORS["Possibly affected"], "Possibly affected (10–50%)"))
+        if (b.critical.astype(bool) & b.impact.isin(["Affected", "Possibly affected"])).any():
+            rows.append('<span style="display:inline-block;width:10px;height:10px;margin:0 9px 0 2px;'
+                        'border-radius:50%;background:#6d28d9;border:1px solid #fff;box-shadow:0 0 0 1px #6d28d9">'
+                        '</span>Critical facility (school, hospital, care home, police, fire)')
+    if (run_dir / "water_depth.tif").exists():
+        rows += ['<div style="margin-top:6px"><b>Estimated water depth</b> <i>(layer)</i></div>',
+                 '<span style="display:inline-block;width:120px;height:9px;border-radius:2px;vertical-align:middle;'
+                 'background:linear-gradient(to right,rgb(186,228,250),rgb(8,48,107))"></span>'
+                 '<div style="display:flex;justify-content:space-between;width:120px;font-size:11px">'
+                 '<span>0 m</span><span>1.5 m</span><span>3 m+</span></div>']
+    if feats.exists():
+        rows += ['<div style="margin-top:6px"><b>Radar images</b> <i>(layers)</i></div>',
+                 '<span style="display:inline-block;width:120px;height:9px;border-radius:2px;vertical-align:middle;'
+                 'background:linear-gradient(to right,#000,#fff)"></span>'
+                 '<div style="display:flex;justify-content:space-between;width:120px;font-size:11px">'
+                 '<span>water</span><span>land</span><span>buildings</span></div>']
+    body = "".join(r if r.startswith("<div") else f"<div>{r}</div>" for r in rows)
+    return ('<div style="background:rgba(255,255,255,0.93);color:#1f2328;padding:8px 11px;border-radius:6px;'
+            'font:12px/1.6 -apple-system,Segoe UI,Helvetica,Arial,sans-serif;box-shadow:0 1px 5px rgba(0,0,0,.35);'
+            f'max-width:270px">{body}</div>')
+
+
+class Legend(MacroElement):
+    """Leaflet control holding the legend HTML (rendered inside the map, so it shows in full screen too)."""
+    _template = Template("""
+{% macro script(this, kwargs) %}
+var legend_{{ this.get_name() }} = L.control({position: 'bottomleft'});
+legend_{{ this.get_name() }}.onAdd = function (map) {
+    var div = L.DomUtil.create('div');
+    div.innerHTML = {{ this.html|tojson }};
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+};
+legend_{{ this.get_name() }}.addTo({{ this._parent.get_name() }});
+{% endmacro %}
+""")
+
+    def __init__(self, html):
+        super().__init__()
+        self._name = "Legend"
+        self.html = html
+
+
+m.add_child(Legend(map_legend()))
 st.caption("Tip: the satellite background is from a normal day, not the flood. Switch on **Radar image after the "
-           "flood** to see the water, or **Estimated water depth** (light = shallow, dark blue = 3 m or more). "
-           "Hover over a purple dot to see the facility.")
+           "flood** to see the water, or **Estimated water depth**. Hover over a purple dot to see the facility.")
 st_folium(m, height=580, use_container_width=True, returned_objects=[], key=f"map_{run_dir.name}")
 
 # ------------------------------------------------------------------ tables
@@ -261,6 +312,7 @@ if b is not None:
     pts = t.geometry.representative_point()
     t["latitude"], t["longitude"] = pts.y.round(6), pts.x.round(6)
     t["flooded_pct"] = (100 * t.flood_fraction).round(0)
+    t["name"] = t["name"].fillna("")
     t["status"] = t.apply(status, axis=1) if len(t) else []
     order = {"Severe": 0, "Moderate": 1, "Minor": 2, "Affected": 3, "Possibly affected": 4}
     t["_o"] = t.status.map(order)
